@@ -1,0 +1,5 @@
+mvn exec:java "-Dexec.args=nodo1.properties"
+
+mvn exec:java "-Dexec.args=nodo2.properties"
+
+mvn exec:java "-Dexec.args=nodo3.properties"

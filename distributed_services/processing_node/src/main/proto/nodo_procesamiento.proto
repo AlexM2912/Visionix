@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "co.edu.upb.grpc";
+option java_outer_classname = "NodoProcesamientoProto";
+
+package nodoprocesamiento;
+
+message TransformacionRequest {
+  string tipo = 1;
+  string valor = 2;
+}
+
+message TrabajoImagenRequest {
+  int64 idLote = 1;
+  int64 idImagen = 2;
+  string nombreArchivo = 3;
+  string rutaOrigen = 4;
+  repeated TransformacionRequest transformaciones = 5;
+}
+
+message SolicitudTrabajosRequest {
+  repeated TrabajoImagenRequest trabajos = 1;
+}
+
+message RespuestaRecepcionTrabajos {
+  int32 aceptados = 1;
+  int32 rechazados = 2;
+  string mensaje = 3;
+}
+
+message EstadoNodoRequest {
+}
+
+message EstadoNodoResponse {
+  string idNodo = 1;
+  bool activo = 2;
+  int32 capacidadMaxima = 3;
+  int32 cargaActual = 4;
+  int32 capacidadDisponible = 5;
+  int32 hilosConfigurados = 6;
+}
+
+message MetricasNodoRequest {
+}
+
+message MetricasNodoResponse {
+  string idNodo = 1;
+  int32 trabajosRecibidos = 2;
+  int32 trabajosCompletados = 3;
+  int32 trabajosFallidos = 4;
+  int64 tiempoTotalProcesamientoMs = 5;
+  double tiempoPromedioProcesamientoMs = 6;
+  int32 cargaActual = 7;
+}
+
+service ServicioNodoProcesamiento {
+  rpc ObtenerEstadoNodo (EstadoNodoRequest) returns (EstadoNodoResponse);
+  rpc ObtenerMetricasNodo (MetricasNodoRequest) returns (MetricasNodoResponse);
+  rpc RecibirTrabajos (SolicitudTrabajosRequest) returns (RespuestaRecepcionTrabajos);
+}

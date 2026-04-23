@@ -1,0 +1,66 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>co.edu.upb</groupId>
+    <artifactId>procesamiento-imagenes</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <dependencies>
+        <build>
+            <plugins>
+                <!-- Plugin para manejar Node.js y npm -->
+                <plugin>
+                    <groupId>com.github.eirslett</groupId>
+                    <artifactId>frontend-maven-plugin</artifactId>
+                    <version>1.12.1</version>
+                    <configuration>
+                        <nodeVersion>v18.17.0</nodeVersion> <!-- Ajusta la versión de Node.js si es necesario -->
+                        <npmVersion>9.6.7</npmVersion> <!-- Ajusta la versión de npm -->
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>install node and npm</id>
+                            <goals>
+                                <goal>install-node-and-npm</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>npm install</id>
+                            <goals>
+                                <goal>npm</goal>
+                            </goals>
+                            <phase>generate-resources</phase>
+                        </execution>
+                        <execution>
+                            <id>npm build</id>
+                            <goals>
+                                <goal>npm</goal>
+                            </goals>
+                            <phase>compile</phase>
+                            <configuration>
+                                <arguments>run build</arguments>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </build>
+            <!-- SOAP -->
+            <dependency>
+                <groupId>jakarta.xml.ws</groupId>
+                <artifactId>jakarta.xml.ws-api</artifactId>
+                <version>4.0.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>jakarta.jws</groupId>
+                <artifactId>jakarta.jws-api</artifactId>
+                <version>3.0.0</version>
+            </dependency>
+    </dependencies>
+
+</project>
