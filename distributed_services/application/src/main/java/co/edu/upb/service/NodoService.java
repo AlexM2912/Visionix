@@ -44,6 +44,35 @@ public class NodoService {
         return nodosActivos;
     }
 
+    public List<EstadoNodoDTO> obtenerEstadosNodos() {
+        List<EstadoNodoDTO> estados = new ArrayList<>();
+
+        for (NodoDisponible nodo : obtenerNodosConfigurados()) {
+            EstadoNodoDTO estado;
+
+            try {
+                estado = processingNodeGrpcClient.obtenerEstadoNodo(
+                        nodo.getHost(),
+                        nodo.getPuerto()
+                );
+            } catch (Exception e) {
+                estado = new EstadoNodoDTO();
+                estado.setIdNodo(nodo.getIdNodo());
+                estado.setActivo(false);
+                estado.setCapacidadMaxima(0);
+                estado.setCargaActual(0);
+                estado.setCapacidadDisponible(0);
+                estado.setHilosConfigurados(0);
+            }
+
+            estado.setHost(nodo.getHost());
+            estado.setPuerto(nodo.getPuerto());
+            estados.add(estado);
+        }
+
+        return estados;
+    }
+
     public static class NodoDisponible {
         private String idNodo;
         private String host;

@@ -3,6 +3,8 @@ package co.edu.upb.dto;
 public class EstadoNodoDTO {
 
     private String idNodo;
+    private String host;
+    private int puerto;
     private boolean activo;
     private int capacidadMaxima;
     private int cargaActual;
@@ -15,6 +17,22 @@ public class EstadoNodoDTO {
 
     public void setIdNodo(String idNodo) {
         this.idNodo = idNodo;
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public void setHost(String host) {
+        this.host = host;
+    }
+
+    public int getPuerto() {
+        return puerto;
+    }
+
+    public void setPuerto(int puerto) {
+        this.puerto = puerto;
     }
 
     public boolean isActivo() {

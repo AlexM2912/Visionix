@@ -134,6 +134,7 @@ export interface AdminSummaryResponse {
     processingNow: number;
     currentLoad: number;
     maxCapacity: number;
+    availableCapacity: number;
   }>;
   systemLogs: Array<{
     time: string;

@@ -1,4 +1,18 @@
 import { processingDb } from "../config/bd";
+import * as soap from "soap";
+import { env } from "../config/env";
+import { unwrapSoapResult } from "../utils/soap";
+
+interface NodeStatusSoap {
+  idNodo?: string;
+  host?: string;
+  puerto?: number;
+  activo?: boolean;
+  capacidadMaxima?: number;
+  cargaActual?: number;
+  capacidadDisponible?: number;
+  hilosConfigurados?: number;
+}
 
 export class AdminServicio {
   static async obtenerResumen() {
@@ -86,6 +100,28 @@ export class AdminServicio {
       `
     );
 
+    let realNodeStatuses: NodeStatusSoap[] = [];
+
+    try {
+      const client = await soap.createClientAsync(env.SOAP_WSDL_URL);
+      const [response] = await client.obtenerEstadosNodosAsync({});
+      const result = unwrapSoapResult<any>(response);
+
+      if (Array.isArray(result)) {
+        realNodeStatuses = result;
+      } else if (Array.isArray(result?.item)) {
+        realNodeStatuses = result.item;
+      } else if (result) {
+        realNodeStatuses = [result];
+      }
+    } catch (error) {
+      console.error("No fue posible consultar estados reales de nodos:", error);
+    }
+
+    const realNodeStatusMap = new Map(
+      realNodeStatuses.map((node) => [String(node.idNodo || ""), node])
+    );
+
     const totalLotes = Number(lotes[0]?.totalLotes || 0);
     const lotesCompletados = Number(lotes[0]?.lotesCompletados || 0);
     const health = totalLotes > 0 ? Math.round((lotesCompletados / totalLotes) * 100) : 0;
@@ -111,22 +147,35 @@ export class AdminServicio {
         requests: Number(row.requests || 0),
       })),
       nodes: nodeRows.map((row: any) => {
-        const currentLoad = Number(row.currentLoad || 0);
-        const maxCapacity = Number(row.maxCapacity || 1);
+        const nodeKey = `nodo-${row.id}`;
+        const realStatus = realNodeStatusMap.get(nodeKey);
+        const currentLoad = Number(realStatus?.cargaActual ?? row.currentLoad ?? 0);
+        const maxCapacity = Number(realStatus?.capacidadMaxima ?? row.maxCapacity ?? 1);
         const usage = Math.min(100, Math.round((currentLoad / Math.max(1, maxCapacity)) * 100));
         return {
           id: String(row.id),
           name: row.name,
-          status: row.estado === "ACTIVO" ? "online" : "offline",
-          location: row.location,
+          status: realStatus ? (realStatus.activo ? "online" : "offline") : row.estado === "ACTIVO" ? "online" : "offline",
+          location: realStatus?.host && realStatus?.puerto ? `${realStatus.host}:${realStatus.puerto}` : row.location,
           cpu: usage,
           memory: usage,
-          disk: Math.min(100, Math.max(10, usage + 10)),
-          uptime: row.estado === "ACTIVO" ? "Activo" : "Sin conexión",
+          disk: Math.min(
+            100,
+            Math.max(
+              0,
+              Math.round(
+                ((Number(realStatus?.capacidadDisponible ?? Math.max(0, maxCapacity - currentLoad))) /
+                  Math.max(1, maxCapacity)) *
+                  100
+              )
+            )
+          ),
+          uptime: realStatus ? (realStatus.activo ? `Activo (${Number(realStatus.hilosConfigurados || 0)} hilos)` : "Sin conexión") : row.estado === "ACTIVO" ? "Activo" : "Sin conexión",
           processedToday: Number(row.processedToday || 0),
           processingNow: Number(row.processingNow || 0),
           currentLoad,
           maxCapacity,
+          availableCapacity: Number(realStatus?.capacidadDisponible ?? Math.max(0, maxCapacity - currentLoad)),
         };
       }),
       systemLogs: logRows,

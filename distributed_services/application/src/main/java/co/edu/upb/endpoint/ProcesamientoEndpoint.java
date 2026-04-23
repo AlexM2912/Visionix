@@ -7,19 +7,23 @@ import co.edu.upb.dto.ResetPasswordRequestDTO;
 import co.edu.upb.dto.SignupRequestDTO;
 import co.edu.upb.dto.SolicitudLoteDTO;
 import co.edu.upb.dto.ValidateTokenResponseDTO;
+import co.edu.upb.dto.EstadoNodoDTO;
 import co.edu.upb.dto.VerifyLoginRequestDTO;
 import co.edu.upb.dto.VerifySignupRequestDTO;
 import co.edu.upb.service.LoteService;
+import co.edu.upb.service.NodoService;
 import co.edu.upb.service.ServicioAutenticacionProxy;
 import jakarta.jws.WebMethod;
 import jakarta.jws.WebParam;
 import jakarta.jws.WebService;
+import java.util.List;
 
 @WebService
 public class ProcesamientoEndpoint {
 
     private final LoteService loteService = new LoteService();
     private final ServicioAutenticacionProxy servicioAutenticacionProxy = new ServicioAutenticacionProxy();
+    private final NodoService nodoService = new NodoService();
 
     @WebMethod
     public AuthResponseDTO signup(
@@ -67,6 +71,11 @@ public class ProcesamientoEndpoint {
     public AuthResponseDTO logout(
             @WebParam(name = "token") String token) {
         return servicioAutenticacionProxy.logout(token);
+    }
+
+    @WebMethod
+    public List<EstadoNodoDTO> obtenerEstadosNodos() {
+        return nodoService.obtenerEstadosNodos();
     }
 
     @WebMethod

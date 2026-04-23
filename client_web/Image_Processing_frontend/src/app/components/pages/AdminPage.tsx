@@ -257,7 +257,7 @@ export function AdminPage() {
                     <div>
                       <div className="flex items-center justify-between text-xs mb-1">
                         <span className="text-muted-foreground flex items-center gap-1">
-                          <Cpu className="w-3 h-3" /> Carga
+                          <Cpu className="w-3 h-3" /> Trabajos activos
                         </span>
                         <span className="text-cyan-400">{node.currentLoad}/{node.maxCapacity}</span>
                       </div>
@@ -267,7 +267,7 @@ export function AdminPage() {
                     <div>
                       <div className="flex items-center justify-between text-xs mb-1">
                         <span className="text-muted-foreground flex items-center gap-1">
-                          <Database className="w-3 h-3" /> Uso lógico
+                          <Database className="w-3 h-3" /> Ocupación del nodo
                         </span>
                         <span className="text-purple-400">{node.memory}%</span>
                       </div>
@@ -277,9 +277,9 @@ export function AdminPage() {
                     <div>
                       <div className="flex items-center justify-between text-xs mb-1">
                         <span className="text-muted-foreground flex items-center gap-1">
-                          <HardDrive className="w-3 h-3" /> Capacidad simulada
+                          <HardDrive className="w-3 h-3" /> Capacidad disponible
                         </span>
-                        <span className="text-green-400">{node.disk}%</span>
+                        <span className="text-green-400">{node.availableCapacity}/{node.maxCapacity} ({node.disk}%)</span>
                       </div>
                       <Progress value={node.disk} className="h-1 [&>div]:bg-green-500" />
                     </div>
