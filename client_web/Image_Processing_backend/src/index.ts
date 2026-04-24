@@ -8,14 +8,14 @@ import { env } from "./config/env";
 import authRutas from "./routes/authRutas";
 import procesamientoRutas from "./routes/procesamientoRutas";
 import { authMiddleware } from "./middlewares/authMiddleware";
+import { ProcesamientoControlador } from "./controllers/procesamientoControlador";
 
 EventEmitter.defaultMaxListeners = 20;
 
 const app = express();
 const PORT = env.PORT;
 
-const STORAGE_PATH =
-  "C:/Users/alexd/Desktop/Sistemas Distribuidos/Visionix/distributed_services/processing_node/storage";
+const STORAGE_PATH = process.env.STORAGE_PATH || path.join(process.cwd(), "storage");
 
 app.use(cors());
 app.use(express.json({ limit: "30mb" }));
@@ -58,6 +58,12 @@ app.get("/api/health", async (_req: Request, res: Response) => {
 });
 
 app.use("/api/auth", authRutas);
+
+app.get(
+  "/api/procesamiento/archivo-publico",
+  ProcesamientoControlador.obtenerArchivo
+);
+
 app.use("/api/procesamiento", authMiddleware, procesamientoRutas);
 
 app.use((_req: Request, res: Response) => {

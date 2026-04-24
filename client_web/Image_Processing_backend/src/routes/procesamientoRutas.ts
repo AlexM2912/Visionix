@@ -5,7 +5,10 @@ const router = Router();
 
 router.get("/admin/resumen", ProcesamientoControlador.adminResumen);
 router.get("/lotes", ProcesamientoControlador.listarLotes);
+
 router.get("/archivo", ProcesamientoControlador.obtenerArchivo);
+router.get("/archivo-publico", ProcesamientoControlador.obtenerArchivo);
+
 router.post("/lote", ProcesamientoControlador.crearLote);
 router.get("/lote/:idLote", ProcesamientoControlador.detalleLote);
 router.get("/lote/:idLote/logs", ProcesamientoControlador.logsLote);

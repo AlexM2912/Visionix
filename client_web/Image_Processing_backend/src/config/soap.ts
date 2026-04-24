@@ -1,3 +1,3 @@
 export const SOAP_CONFIG = {
-  wsdlUrl: "http://localhost:8080/ws/procesamiento?wsdl",
+  wsdlUrl: "https://visionix-application.up.railway.app/ws/procesamiento?wsdl",
 };
