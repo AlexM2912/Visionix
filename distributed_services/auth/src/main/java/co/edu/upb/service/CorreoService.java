@@ -34,6 +34,10 @@ public class CorreoService {
 
             String from = AppConfig.get("mail.from");
 
+            if (from == null || from.isBlank()) {
+                throw new RuntimeException("mail.from no está configurado");
+            }
+
             String asunto = "Código de verificación - Visionix";
 
             String contenido = """
@@ -46,19 +50,30 @@ public class CorreoService {
                     Visionix
                     """.formatted(tipo, codigo);
 
+            Map<String, Object> sender = new HashMap<>();
+            sender.put("email", from);
+            sender.put("name", "Visionix");
+
+            Map<String, Object> destinatario = new HashMap<>();
+            destinatario.put("email", correoDestino);
+
             Map<String, Object> payload = new HashMap<>();
-            payload.put("from", from);
-            payload.put("to", new String[]{correoDestino});
+            payload.put("sender", sender);
+            payload.put("to", new Object[]{destinatario});
             payload.put("subject", asunto);
-            payload.put("text", contenido);
+            payload.put("textContent", contenido);
 
             String json = objectMapper.writeValueAsString(payload);
 
+            System.out.println("ENVIANDO CORREO BREVO A: " + correoDestino);
+            System.out.println("BODY BREVO: " + json);
+
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("https://api.BREVO.com/emails"))
+                    .uri(URI.create("https://api.brevo.com/v3/smtp/email"))
                     .timeout(Duration.ofSeconds(20))
-                    .header("Authorization", "Bearer " + apiKey)
+                    .header("api-key", apiKey)
                     .header("Content-Type", "application/json")
+                    .header("Accept", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(json))
                     .build();
 
