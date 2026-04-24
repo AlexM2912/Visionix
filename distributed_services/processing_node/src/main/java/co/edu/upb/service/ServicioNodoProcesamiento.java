@@ -1,10 +1,10 @@
 package co.edu.upb.service;
-
 import java.awt.image.BufferedImage;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import co.edu.upb.almacenamiento.GestorAlmacenamiento;
@@ -55,13 +55,21 @@ public class ServicioNodoProcesamiento {
     }
 
     public synchronized int recibirTrabajos(List<TrabajoImagenDTO> trabajos) {
+        return recibirTrabajosConResultados(trabajos).size();
+    }
+
+    public synchronized List<ResultadoProcesamientoDTO> recibirTrabajosConResultados(List<TrabajoImagenDTO> trabajos) {
+        List<ResultadoProcesamientoDTO> resultados = new ArrayList<>();
+
         if (trabajos == null || trabajos.isEmpty()) {
             gestorLogs.warn("No se recibieron trabajos para procesar en " + configuracionNodo.getIdNodo());
-            return 0;
+            return resultados;
         }
 
         int capacidadDisponible = configuracionNodo.getCapacidadMaxima() - cargaActual.get();
         int aceptados = Math.min(capacidadDisponible, trabajos.size());
+
+        List<Future<ResultadoProcesamientoDTO>> futuros = new ArrayList<>();
 
         for (int i = 0; i < aceptados; i++) {
             TrabajoImagenDTO trabajo = trabajos.get(i);
@@ -83,10 +91,12 @@ public class ServicioNodoProcesamiento {
                     "Trabajo recibido en " + configuracionNodo.getIdNodo()
                 );
 
-                servicioEjecucionParalela.ejecutarAsync(
+                Future<ResultadoProcesamientoDTO> futuro = servicioEjecucionParalela.ejecutarAsync(
                     trabajo,
                     () -> procesarTrabajo(trabajo)
                 );
+
+                futuros.add(futuro);
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -106,9 +116,23 @@ public class ServicioNodoProcesamiento {
                 );
 
                 servicioColaTrabajos.desencolar(trabajo);
+
                 if (cargaActual.get() > 0) {
                     cargaActual.decrementAndGet();
                 }
+            }
+        }
+
+        for (Future<ResultadoProcesamientoDTO> futuro : futuros) {
+            try {
+                ResultadoProcesamientoDTO resultado = futuro.get();
+
+                if (resultado != null) {
+                    resultados.add(resultado);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                gestorLogs.error("Error obteniendo resultado procesado: " + e.getMessage());
             }
         }
 
@@ -120,7 +144,7 @@ public class ServicioNodoProcesamiento {
             );
         }
 
-        return aceptados;
+        return resultados;
     }
 
     private ResultadoProcesamientoDTO procesarTrabajo(TrabajoImagenDTO trabajo) {
