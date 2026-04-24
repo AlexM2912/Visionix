@@ -2,6 +2,8 @@ package co.edu.upb;
 
 import co.edu.upb.config.AppConfig;
 import co.edu.upb.controller.AuthController;
+import static spark.Spark.get;
+import static spark.Spark.ipAddress;
 import static spark.Spark.port;
 
 public class AuthMain {
@@ -13,7 +15,10 @@ public class AuthMain {
                 ? Integer.parseInt(portEnv)
                 : AppConfig.getInt("server.port");
 
+        ipAddress("0.0.0.0");
         port(serverPort);
+
+        get("/health", (req, res) -> "AUTH OK");
 
         AuthController authController = new AuthController();
         authController.registrarRutas();
