@@ -15,10 +15,15 @@ public class ProcessingNodeMain {
         LectorConfiguracionNodo lectorConfiguracionNodo = new LectorConfiguracionNodo();
         ConfiguracionNodo configuracionNodo = lectorConfiguracionNodo.cargar(archivoConfiguracion);
 
+        String portEnv = System.getenv("PORT");
+        int puerto = portEnv != null && !portEnv.isBlank()
+                ? Integer.parseInt(portEnv)
+                : configuracionNodo.getPuerto();
+
         ServicioNodoProcesamiento servicioNodoProcesamiento = new ServicioNodoProcesamiento(configuracionNodo);
 
         Server servidor = ServerBuilder
-                .forPort(configuracionNodo.getPuerto())
+                .forPort(puerto)
                 .addService(new NodoProcesamientoGrpcService(servicioNodoProcesamiento))
                 .build();
 
@@ -27,7 +32,7 @@ public class ProcessingNodeMain {
         System.out.println("==============================================");
         System.out.println("NODO gRPC INICIADO");
         System.out.println("Nodo: " + configuracionNodo.getIdNodo());
-        System.out.println("Puerto gRPC: " + configuracionNodo.getPuerto());
+        System.out.println("Puerto gRPC: " + puerto);
         System.out.println("Hilos: " + configuracionNodo.getCantidadHilos());
         System.out.println("Capacidad máxima: " + configuracionNodo.getCapacidadMaxima());
         System.out.println("Ruta almacenamiento: " + configuracionNodo.getRutaAlmacenamiento());
