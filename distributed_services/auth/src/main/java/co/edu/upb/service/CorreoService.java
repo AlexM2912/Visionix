@@ -26,7 +26,12 @@ public class CorreoService {
 
     public void enviarCodigo(String correoDestino, String codigo, String tipo) {
         try {
-            String apiKey = AppConfig.get("resend.api.key");
+            String apiKey = System.getenv("RESEND_API_KEY");
+
+            if (apiKey == null || apiKey.isBlank()) {
+                throw new RuntimeException("RESEND_API_KEY no está configurada en Railway");
+            }
+            
             String from = AppConfig.get("mail.from");
 
             String asunto = "Código de verificación - Visionix";
