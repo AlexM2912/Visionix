@@ -7,9 +7,10 @@ import static spark.Spark.port;
 public class AuthMain {
 
     public static void main(String[] args) {
-        int serverPort = AppConfig.getInt("server.port");
+        String portEnv = System.getenv("PORT");
+        int serverPort = portEnv != null ? Integer.parseInt(portEnv) : AppConfig.getInt("server.port");
         port(serverPort);
-
+        
         AuthController authController = new AuthController();
         authController.registrarRutas();
 
