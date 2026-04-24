@@ -1,52 +1,35 @@
 package co.edu.upb.service;
 
-import java.util.Properties;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import co.edu.upb.config.AppConfig;
-import jakarta.mail.Authenticator;
-import jakarta.mail.Message;
-import jakarta.mail.PasswordAuthentication;
-import jakarta.mail.Session;
-import jakarta.mail.Transport;
-import jakarta.mail.internet.InternetAddress;
-import jakarta.mail.internet.MimeMessage;
 
 public class CorreoService {
 
+    private final HttpClient httpClient;
+    private final ObjectMapper objectMapper;
+
+    public CorreoService() {
+        this.httpClient = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(10))
+                .build();
+        this.objectMapper = new ObjectMapper();
+    }
+
     public void enviarCodigo(String correoDestino, String codigo, String tipo) {
-        String host = AppConfig.get("mail.host");
-        String port = AppConfig.get("mail.port");
-        String username = AppConfig.get("mail.username");
-        String password = AppConfig.get("mail.password");
-        String from = AppConfig.get("mail.from");
-
-        Properties props = new Properties();
-
-        props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.host", host);
-        props.put("mail.smtp.port", port);
-
-        // 👇 SSL directo (IMPORTANTE para Railway)
-        props.put("mail.smtp.ssl.enable", "true");
-        props.put("mail.smtp.ssl.trust", host);
-
-        // 👇 Timeouts
-        props.put("mail.smtp.connectiontimeout", "15000");
-        props.put("mail.smtp.timeout", "15000");
-        props.put("mail.smtp.writetimeout", "15000");
-
-        Session session = Session.getInstance(props, new Authenticator() {
-            @Override
-            protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(username, password);
-            }
-        });
-
         try {
-            Message message = new MimeMessage(session);
-            message.setFrom(new InternetAddress(from, "Visionix"));
-            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(correoDestino));
-            message.setSubject("Código de verificación - Visionix");
+            String apiKey = AppConfig.get("resend.api.key");
+            String from = AppConfig.get("mail.from");
+
+            String asunto = "Código de verificación - Visionix";
 
             String contenido = """
                     Hola,
@@ -58,11 +41,34 @@ public class CorreoService {
                     Visionix
                     """.formatted(tipo, codigo);
 
-            message.setContent(contenido, "text/plain; charset=UTF-8");
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("from", from);
+            payload.put("to", new String[]{correoDestino});
+            payload.put("subject", asunto);
+            payload.put("text", contenido);
 
-            System.out.println("Enviando correo a: " + correoDestino);
-            Transport.send(message);
-            System.out.println("Correo enviado correctamente a: " + correoDestino);
+            String json = objectMapper.writeValueAsString(payload);
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.resend.com/emails"))
+                    .timeout(Duration.ofSeconds(20))
+                    .header("Authorization", "Bearer " + apiKey)
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(json))
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(
+                    request,
+                    HttpResponse.BodyHandlers.ofString()
+            );
+
+            System.out.println("STATUS RESEND: " + response.statusCode());
+            System.out.println("RESPUESTA RESEND: " + response.body());
+
+            if (response.statusCode() < 200 || response.statusCode() >= 300) {
+                throw new RuntimeException("Error enviando correo con Resend. Código: "
+                        + response.statusCode() + ". Respuesta: " + response.body());
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
