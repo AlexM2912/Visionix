@@ -16,9 +16,15 @@ public class ProcessingNodeMain {
         ConfiguracionNodo configuracionNodo = lectorConfiguracionNodo.cargar(archivoConfiguracion);
 
         String portEnv = System.getenv("PORT");
+
         int puerto = portEnv != null && !portEnv.isBlank()
                 ? Integer.parseInt(portEnv)
                 : configuracionNodo.getPuerto();
+
+        String serviceName = System.getenv("RAILWAY_SERVICE_NAME");
+        String direccionInterna = serviceName != null && !serviceName.isBlank()
+                ? serviceName + ".railway.internal:" + puerto
+                : "localhost:" + puerto;
 
         ServicioNodoProcesamiento servicioNodoProcesamiento = new ServicioNodoProcesamiento(configuracionNodo);
 
@@ -33,8 +39,9 @@ public class ProcessingNodeMain {
         System.out.println("NODO gRPC INICIADO");
         System.out.println("Nodo: " + configuracionNodo.getIdNodo());
         System.out.println("Puerto gRPC: " + puerto);
+        System.out.println("Direccion interna: " + direccionInterna);
         System.out.println("Hilos: " + configuracionNodo.getCantidadHilos());
-        System.out.println("Capacidad máxima: " + configuracionNodo.getCapacidadMaxima());
+        System.out.println("Capacidad maxima: " + configuracionNodo.getCapacidadMaxima());
         System.out.println("Ruta almacenamiento: " + configuracionNodo.getRutaAlmacenamiento());
         System.out.println("==============================================");
 
