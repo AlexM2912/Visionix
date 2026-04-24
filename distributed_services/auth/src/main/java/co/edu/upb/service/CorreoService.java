@@ -26,12 +26,12 @@ public class CorreoService {
 
     public void enviarCodigo(String correoDestino, String codigo, String tipo) {
         try {
-            String apiKey = System.getenv("RESEND_API_KEY");
+            String apiKey = System.getenv("BREVO_API_KEY");
 
             if (apiKey == null || apiKey.isBlank()) {
-                throw new RuntimeException("RESEND_API_KEY no está configurada en Railway");
+                throw new RuntimeException("BREVO_API_KEY no está configurada en Railway");
             }
-            
+
             String from = AppConfig.get("mail.from");
 
             String asunto = "Código de verificación - Visionix";
@@ -55,7 +55,7 @@ public class CorreoService {
             String json = objectMapper.writeValueAsString(payload);
 
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("https://api.resend.com/emails"))
+                    .uri(URI.create("https://api.BREVO.com/emails"))
                     .timeout(Duration.ofSeconds(20))
                     .header("Authorization", "Bearer " + apiKey)
                     .header("Content-Type", "application/json")
@@ -67,11 +67,11 @@ public class CorreoService {
                     HttpResponse.BodyHandlers.ofString()
             );
 
-            System.out.println("STATUS RESEND: " + response.statusCode());
-            System.out.println("RESPUESTA RESEND: " + response.body());
+            System.out.println("STATUS BREVO: " + response.statusCode());
+            System.out.println("RESPUESTA BREVO: " + response.body());
 
             if (response.statusCode() < 200 || response.statusCode() >= 300) {
-                throw new RuntimeException("Error enviando correo con Resend. Código: "
+                throw new RuntimeException("Error enviando correo con BREVO. Código: "
                         + response.statusCode() + ". Respuesta: " + response.body());
             }
 
