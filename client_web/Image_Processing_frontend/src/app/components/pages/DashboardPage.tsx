@@ -12,21 +12,23 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { api, BatchSummary } from "../../lib/api";
 import { useAuth } from "../../contexts/AuthContext";
 
-export function DashboardPage() {
-  const { session } = useAuth();
-  const [batches, setBatches] = useState<BatchSummary[]>([]);
+  export function DashboardPage() {
+    const { session } = useAuth();
+    const [batches, setBatches] = useState<BatchSummary[]>([]);
 
-  useEffect(() => {
+    useEffect(() => {
+    if (!session?.token) return;
+
     let cancelled = false;
 
     async function load() {
-      if (!session?.token) {
-        return;
-      }
-
-      const response = await api.listBatches(session.token);
-      if (!cancelled) {
-        setBatches(response.data);
+      try {
+        const response = await api.listBatches(session.token);
+        if (!cancelled) {
+          setBatches(response.data);
+        }
+      } catch (e) {
+        console.error(e);
       }
     }
 
@@ -35,7 +37,7 @@ export function DashboardPage() {
     return () => {
       cancelled = true;
     };
-  }, [session?.token]);
+  }, []); // 🔥 CAMBIO CLAVE
 
   const statsData = useMemo(() => {
     const totalImages = batches.reduce((sum, batch) => sum + Number(batch.cantidadImagenes || 0), 0);

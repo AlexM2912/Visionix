@@ -2,15 +2,14 @@ import * as soap from "soap";
 import fs from "fs/promises";
 import path from "path";
 import os from "os";
-import { promisify } from "util";
-import { execFile } from "child_process";
+import AdmZip from "adm-zip";
 import { env } from "../config/env";
 import { processingDb } from "../config/bd";
 import { SolicitudLoteDTO } from "../types/procesamiento";
 import { unwrapSoapResult } from "../utils/soap";
 
+
 const UPLOADS_DIR = path.resolve(process.cwd(), "uploads", "source");
-const execFileAsync = promisify(execFile);
 const REPO_ROOT = path.resolve(process.cwd(), "..", "..");
 
 async function resolveStoredFilePath(ruta: string) {
@@ -226,6 +225,7 @@ export class ProcesamientoServicio {
 
   static async crearZipLote(idUsuario: number, idLote: number) {
     const detalle = await this.obtenerDetalleLote(idUsuario, idLote);
+
     const archivos = detalle.imagenes
       .map((imagen: any) => imagen.rutaArchivoResultado as string | null)
       .filter((ruta: string | null): ruta is string => Boolean(ruta));
@@ -250,7 +250,13 @@ export class ProcesamientoServicio {
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), `visionix-lote-${idLote}-`));
     const zipPath = path.join(tempDir, `lote-${idLote}.zip`);
 
-    await execFileAsync("zip", ["-j", zipPath, ...existentes]);
+    const zip = new AdmZip();
+
+    for (const archivo of existentes) {
+      zip.addLocalFile(archivo);
+    }
+
+    zip.writeZip(zipPath);
 
     return {
       zipPath,

@@ -6,9 +6,12 @@ import java.sql.SQLException;
 
 public class DatabaseConfig {
 
-    private static final String URL = "jdbc:mysql://localhost:3306/bd_procesamiento_imagenes";
+    private static final String URL =
+        "jdbc:mysql://shortline.proxy.rlwy.net:16423/railway?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
+
     private static final String USER = "root";
-    private static final String PASSWORD = "nicolas1112";
+
+    private static final String PASSWORD = "osHubhnKSgtRJTweZvryMgpaZkLiVLFI";
 
     static {
         try {
