@@ -30,6 +30,8 @@ public class ServicioAutenticacionProxy {
                 .build();
         this.objectMapper = new ObjectMapper();
         this.authBaseUrl = ConfigUtil.get("auth.base.url");
+
+        System.out.println("AUTH BASE URL USADA POR APPLICATION: " + this.authBaseUrl);
     }
 
     public AuthResponseDTO signup(SignupRequestDTO requestDto) {
@@ -58,8 +60,11 @@ public class ServicioAutenticacionProxy {
 
     public ValidateTokenResponseDTO validarToken(String token) {
         try {
+            String url = authBaseUrl + "/auth/validate";
+            System.out.println("CONSUMIENDO AUTH: " + url);
+
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(authBaseUrl + "/auth/validate"))
+                    .uri(URI.create(url))
                     .timeout(Duration.ofSeconds(15))
                     .header("Authorization", "Bearer " + token)
                     .GET()
@@ -71,6 +76,9 @@ public class ServicioAutenticacionProxy {
             );
 
             String responseBody = response.body();
+
+            System.out.println("STATUS AUTH: " + response.statusCode());
+            System.out.println("RESPUESTA AUTH: " + responseBody);
 
             if (response.statusCode() >= 200 && response.statusCode() < 300) {
                 return objectMapper.readValue(responseBody, ValidateTokenResponseDTO.class);
@@ -91,8 +99,11 @@ public class ServicioAutenticacionProxy {
 
     public AuthResponseDTO logout(String token) {
         try {
+            String url = authBaseUrl + "/auth/logout";
+            System.out.println("CONSUMIENDO AUTH: " + url);
+
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(authBaseUrl + "/auth/logout"))
+                    .uri(URI.create(url))
                     .timeout(Duration.ofSeconds(15))
                     .header("Authorization", "Bearer " + token)
                     .POST(HttpRequest.BodyPublishers.noBody())
@@ -104,6 +115,9 @@ public class ServicioAutenticacionProxy {
             );
 
             String responseBody = response.body();
+
+            System.out.println("STATUS AUTH: " + response.statusCode());
+            System.out.println("RESPUESTA AUTH: " + responseBody);
 
             if (response.statusCode() >= 200 && response.statusCode() < 300) {
                 return objectMapper.readValue(responseBody, AuthResponseDTO.class);
@@ -125,9 +139,13 @@ public class ServicioAutenticacionProxy {
     private <T> T post(String endpoint, Object body, Class<T> responseClass) {
         try {
             String jsonRequest = objectMapper.writeValueAsString(body);
+            String url = authBaseUrl + endpoint;
+
+            System.out.println("CONSUMIENDO AUTH: " + url);
+            System.out.println("BODY AUTH: " + jsonRequest);
 
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(authBaseUrl + endpoint))
+                    .uri(URI.create(url))
                     .timeout(Duration.ofSeconds(15))
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(jsonRequest))
@@ -139,6 +157,9 @@ public class ServicioAutenticacionProxy {
             );
 
             String responseBody = response.body();
+
+            System.out.println("STATUS AUTH: " + response.statusCode());
+            System.out.println("RESPUESTA AUTH: " + responseBody);
 
             if (response.statusCode() >= 200 && response.statusCode() < 300) {
                 return objectMapper.readValue(responseBody, responseClass);
