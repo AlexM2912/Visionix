@@ -31,7 +31,9 @@ export class AuthServicio {
       },
     });
     const resultado = unwrapSoapResult<AuthSoapResponse>(response);
-
+    console.log("RESPUESTA SOAP LOGIN RAW:", JSON.stringify(response, null, 2));
+    console.log("RESPUESTA SOAP LOGIN UNWRAP:", resultado);
+    
     if (!resultado?.ok) {
       throw new Error(resultado?.mensaje || "No fue posible registrar el usuario");
     }
