@@ -14,7 +14,7 @@ public class AuthMain {
                 ? Integer.parseInt(portEnv)
                 : AppConfig.getInt("server.port");
 
-        ipAddress("::");
+        ipAddress("0.0.0.0");
         port(serverPort);
 
         AuthController authController = new AuthController();
