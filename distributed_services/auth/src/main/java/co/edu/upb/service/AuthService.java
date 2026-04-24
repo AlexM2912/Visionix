@@ -109,11 +109,18 @@ public class AuthService {
             throw new IllegalArgumentException("Contraseña incorrecta.");
         }
 
-        codigoService.generarYEnviarCodigo(usuario.getIdUsuario(), usuario.getEmail(), "LOGIN");
+        String jwt = tokenService.generarToken(usuario);
+        sesionService.crearSesion(usuario.getIdUsuario(), jwt);
 
         AuthResponseDTO response = new AuthResponseDTO();
         response.setOk(true);
-        response.setMensaje("Código de acceso enviado al correo.");
+        response.setMensaje("Inicio de sesión exitoso.");
+        response.setToken(jwt);
+        response.setIdUsuario(usuario.getIdUsuario());
+        response.setNombre(usuario.getNombre());
+        response.setEmail(usuario.getEmail());
+        response.setRol(usuario.getRol());
+
         return response;
     }
 
