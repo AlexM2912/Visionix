@@ -21,18 +21,19 @@ public class CorreoService {
         String from = AppConfig.get("mail.from");
 
         Properties props = new Properties();
+
         props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.starttls.enable", "true");
-        props.put("mail.smtp.starttls.required", "true");
         props.put("mail.smtp.host", host);
         props.put("mail.smtp.port", port);
 
-        props.put("mail.smtp.connectiontimeout", "10000");
-        props.put("mail.smtp.timeout", "10000");
-        props.put("mail.smtp.writetimeout", "10000");
-
+        // 👇 SSL directo (IMPORTANTE para Railway)
+        props.put("mail.smtp.ssl.enable", "true");
         props.put("mail.smtp.ssl.trust", host);
-        props.put("mail.smtp.ssl.protocols", "TLSv1.2");
+
+        // 👇 Timeouts
+        props.put("mail.smtp.connectiontimeout", "15000");
+        props.put("mail.smtp.timeout", "15000");
+        props.put("mail.smtp.writetimeout", "15000");
 
         Session session = Session.getInstance(props, new Authenticator() {
             @Override
