@@ -2,6 +2,7 @@ package co.edu.upb;
 
 import co.edu.upb.config.AppConfig;
 import co.edu.upb.controller.AuthController;
+import static spark.Spark.ipAddress;
 import static spark.Spark.port;
 
 public class AuthMain {
@@ -13,6 +14,7 @@ public class AuthMain {
                 ? Integer.parseInt(portEnv)
                 : AppConfig.getInt("server.port");
 
+        ipAddress("::");
         port(serverPort);
 
         AuthController authController = new AuthController();
